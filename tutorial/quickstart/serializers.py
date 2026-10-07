@@ -22,6 +22,7 @@ class MateriaSerializer(serializers.HyperlinkedModelSerializer):
 
 class CarreraSerializer(serializers.HyperlinkedModelSerializer):
     materias = MateriaSerializer(many=True, read_only=True)
+
     class Meta:
         model = Carrera
         fields = ['id', 'nombre', 'clave', 'descripcion', 'materias']
@@ -42,12 +43,12 @@ class CardSerializer(serializers.HyperlinkedModelSerializer):
         fields = '__all__'
 
 class RegisterSerializer(serializers.ModelSerializer):
-    password: serializers.CharField(
+    password = serializers.CharField(
         write_only=True, 
-        min_lenght=6,
-        required = True, 
-        validators=[validate_password
-    ])
+        min_length=6,
+        required=True, 
+        validators=[validate_password]
+    )
 
     email = serializers.EmailField(required = True)
 
@@ -57,18 +58,15 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     def validate_email(self, value):
         if User.objects.filter(email__iexact=value) .exists():
-            raise serializers.ValidationError("A user with that email is incorrect")
+            raise serializers.ValidationError("Ya existe una cuenta con este correo.")
         return value
         
-    def validate_email(self, value):
+    def validate_username(self, value):
         if User.objects.filter(username__iexact=value) .exists():
-            raise serializers.ValidationError("A user with that user is incorrect")
+            raise serializers.ValidationError("Este nombre de usuario ya está registrado.")
         return value
 
     def create(self, validated_data):
-        user = User.objects.create_user(
-            username= validated_data['username'],
-            email= validated_data['email'],
-            password= validated_data['password']
-        )
-        return user
+        return User.objects.create_user(**validated_data)
+
+    
